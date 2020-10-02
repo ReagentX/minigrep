@@ -1,3 +1,4 @@
+use std::process;
 use std::env;
 use std::fs;
 
@@ -7,7 +8,7 @@ struct Config {
 }
 
 impl Config {
-    fn new() -> Config {
+    fn new() -> Result<Config, &'static str> {
         // `args()` returns an Args struct, so transform into an iterator with `collect()`
         let mut args: Vec<String> = env::args().collect();
         if args.len() == 3 {
@@ -16,17 +17,20 @@ impl Config {
                 haystack: args.remove(1),
             };
             println!("Searching for {} in {}", config.needle, config.haystack);
-            return config;
+            return Ok(config);
         } else if args.len() <= 2 {
-            panic!("Missing required parameters: needle, haystack")
+            return Err("missing required parameters: needle, haystack");
         }
-        panic!("Too many parameters passed: {:?}", args);
+        return Err("too many parameters passed!");
     }
 }
 
 fn main() {
     // Build config
-    let config = Config::new();
+    let config = Config::new().unwrap_or_else(|err| {
+        println!("Unable to parse arguments: {}", err);
+        process::exit(1)
+    });
 
     // Check if this is a file and if so, read it
     let content: String = get_content(&config.haystack);
