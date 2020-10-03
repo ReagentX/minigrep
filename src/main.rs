@@ -1,6 +1,7 @@
-use std::process;
 use std::env;
 use std::fs;
+use std::process;
+use std::error::Error;
 
 struct Config {
     needle: String,
@@ -32,16 +33,25 @@ fn main() {
         process::exit(1)
     });
 
+    if let Err(e) = run(config) {
+        println!("Application error: {}", e);
+        process::exit(1)
+    }
+}
+
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
     // Check if this is a file and if so, read it
     let content: String = get_content(&config.haystack);
-    
+
     // Find matching lines
-    print_matches(content, &config.needle)
+    print_matches(content, &config.needle);
+
+    // Successful exit
+    Ok(())
 }
 
 fn print_matches(content: String, needle: &String) {
     for (line_no, line) in content.split("\n").enumerate() {
-        // Reference to config.needle so we do not consume it
         if line.contains(needle) {
             println!("{}: {}", line_no + 1, line);
         }
@@ -50,7 +60,10 @@ fn print_matches(content: String, needle: &String) {
 
 fn get_content(filename: &str) -> String {
     match fs::read_to_string(filename) {
-        Err(err) => panic!("{}", err),
+        Err(err) => {
+            println!("Unable to open file: {}", err);
+            process::exit(1)
+        }
         Ok(contents) => contents,
     }
 }
