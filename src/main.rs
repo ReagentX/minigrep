@@ -1,6 +1,6 @@
 use std::process;
 
-extern crate minigrep;  // Required to not throw import errors (not in the book)
+extern crate minigrep; // Required to not throw import errors (not in the book)
 use minigrep::Config;
 
 fn main() {
